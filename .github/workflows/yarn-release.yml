@@ -1,0 +1,51 @@
+name: Yarn Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Yarn Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Run Tests
+        run: yarn test
+
+      - name: Bump Version
+        run: yarn version --new-version ${{ github.event.inputs.new_version }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "chore: release v${{ github.event.inputs.new_version }}"
+          git push
+
+      - name: Publish Package
+        run: yarn publish --non-interactive
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.new_version }}
+          release_name: v${{ github.event.inputs.new_version }}
+          body: |
+            Release notes for version v${{ github.event.inputs.new_version }}.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
