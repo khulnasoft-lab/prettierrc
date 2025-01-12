@@ -21,6 +21,6 @@
     "prettier-check": "yarn run prettier --write=false"
   },
   "devDependencies": {
-    "prettier": "^1.19.1"
+    "prettier": "^3.0.0"
   }
 }
