@@ -23,29 +23,39 @@ jobs:
       - name: Install Dependencies
         run: yarn install
 
+      - name: Run Prettier Check
+        run: yarn prettier-check
+
       - name: Run Tests
-        run: yarn test
+        run: yarn test # Add your test command here
 
       - name: Bump Version
-        run: yarn version --new-version ${{ github.event.inputs.new_version }}
+        run: |
+          yarn version --patch --no-git-tag-version
+          NEW_VERSION=$(jq -r .version package.json)
+          echo "New version: $NEW_VERSION"
+        id: version
 
       - name: Commit and Push Changes
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add .
-          git commit -m "chore: release v${{ github.event.inputs.new_version }}"
-          git push
+          git add package.json
+          git commit -m "chore: release v${{ steps.version.outputs.NEW_VERSION }}"
+          git tag v${{ steps.version.outputs.NEW_VERSION }}
+          git push origin main --tags
 
       - name: Publish Package
         run: yarn publish --non-interactive
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ github.event.inputs.new_version }}
-          release_name: v${{ github.event.inputs.new_version }}
+          tag_name: v${{ steps.version.outputs.NEW_VERSION }}
+          release_name: v${{ steps.version.outputs.NEW_VERSION }}
           body: |
-            Release notes for version v${{ github.event.inputs.new_version }}.
+            Release notes for version v${{ steps.version.outputs.NEW_VERSION }}.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
