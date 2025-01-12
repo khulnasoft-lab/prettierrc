@@ -1,4 +1,4 @@
-name: Yarn Release
+name: NPM Release
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Yarn Release
+    name: NPM Release
     runs-on: ubuntu-latest
 
     steps:
@@ -18,17 +18,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: yarn install
+        run: npm install
 
       - name: Run Prettier Check
-        run: yarn prettier-check
+        run: npm run prettier-check
 
       - name: Bump Version
         run: |
-          yarn version --patch --no-git-tag-version
+          npm version patch --no-git-tag-version
           NEW_VERSION=$(jq -r .version package.json)
           echo "New version: $NEW_VERSION"
         id: version
@@ -43,7 +43,7 @@ jobs:
           git push origin main --tags
 
       - name: Publish Package
-        run: yarn publish --non-interactive
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
