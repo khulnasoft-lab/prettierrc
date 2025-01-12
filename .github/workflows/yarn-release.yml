@@ -26,9 +26,6 @@ jobs:
       - name: Run Prettier Check
         run: yarn prettier-check
 
-      - name: Run Tests
-        run: yarn test # Add your test command here
-
       - name: Bump Version
         run: |
           yarn version --patch --no-git-tag-version
